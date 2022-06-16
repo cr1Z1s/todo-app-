@@ -5,7 +5,10 @@ const pool = require("./../db");
 
 router.post("/users/register", async (req, res) => {
   try {
-    console.log(req.body);
+    // test if the user exists
+    if ((await pool.query("SELECT * FROM users WHERE email = $1", [req.body.email])).rowCount < 1) {
+      return res.status(409).json("This email is already in use");
+    }
     return res.status(200).json("all is well");
   } catch (error) {
     console.error(error.message);
