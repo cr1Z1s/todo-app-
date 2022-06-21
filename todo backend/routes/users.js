@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require("express");
 const router = express.Router();
 const pool = require("./../db");
@@ -34,12 +35,35 @@ router.post("/users/register", async (req, res) => {
     }
     const hashedpassowrd = await bcrypt.hash(req.body.password, 10);
 
-    await pool.query("INSERT INTO users (user_lastname, user_firstname, email, password) VALUES ($1, $2, $3, $4);", [user_firstname, user_lastname, email.toLowerCase(), hashedpassowrd]);
+    await pool.query("INSERT INTO users (user_lastname, user_firstname, email, password) VALUES ($1, $2, $3, $4);", [user_lastname, user_firstname, email.toLowerCase(), hashedpassowrd]);
 
     return res.status(200).json("Success!");
   } catch (error) {
     console.error(error.message);
     res.status(500).json(error.message);
+  }
+})
+router.post("/users/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    // validate before sql query
+    if (!validator.default.isEmail(email)) {
+      return res.status(401).json("Email or password is incorrect");
+    }
+
+    const queryUser = await pool.query("SELECT * FROM users WHERE email = $1", [email.toLowerCase()]);
+    if (queryUser.rowCount === 0) {
+      return res.status(400).json("Incorrect email or password.");
+    }
+    if (!(await bcrypt.compare(password, queryUser.rows[0].password))) {
+      return res.status(400).json("Incorrect email or password.");
+    }
+    delete queryUser.rows[0].password;
+    delete queryUser.rows[0].is_super_admin;
+    const accessToken = jwt.sign(queryUser.rows[0], process.env.ACCESS_TOKEN_SECRET, { expiresIn: "15d" });
+    res.status(200).json({ accessToken: accessToken });
+  } catch (error) {
+    console.error(error.message);
   }
 })
 
