@@ -5,7 +5,6 @@ const pool = require("./../db");
 
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const passport = require("passport");
 const validator = require("validator");
 const passwordValidator = require('password-validator');
 
