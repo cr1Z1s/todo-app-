@@ -1,11 +1,13 @@
 import { useState } from "react";
-
-import "./App.css";
+import Header from "./components/header/Header";
+import { Outlet } from "react-router-dom";
+import Home from "./routes/Home";
 
 function App() {
   return (
     <div className="App">
-      <h1 className="bg-green-200">starting from scratch</h1>
+      <Header />
+      <Outlet />
     </div>
   );
 }
